@@ -20,3 +20,4 @@ function loop() {
 requestAnimationFrame(loop);
 
 testMatrixModule();
+testNeuralModule();

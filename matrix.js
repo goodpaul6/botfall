@@ -24,6 +24,24 @@ function createMatrixFromRowArrays(rowArrays) {
     };
 }
 
+function createMatrixFromColumnArrays(colArrays) {
+    const cols = colArrays.length;
+    const rows = colArrays[0].length;
+    const data = [];
+
+    for (let i = 0; i < rows; ++i) {
+        for (let j = 0; j < cols; ++j) {
+            data.push(colArrays[j][i]);
+        }
+    }
+
+    return {
+        rows,
+        cols,
+        data,
+    };
+}
+
 function matrixDataIndex(m, row, col) {
     console.assert(row >= 0, row < m.rows, col >= 0, col < m.cols);
 
@@ -52,6 +70,24 @@ function matrixSetInPlace(m, row, col, value) {
     m.data[matrixDataIndex(m, row, col)] = value;
 }
 
+function matrixFillRandomInPlace(m, minValue = -1, maxValue = 1) {
+    for (let i = 0; i < m.data.length; ++i) {
+        m.data[i] = Math.random() * (maxValue - minValue) + minValue;
+    }
+}
+
+function createRandomFilledMatrix({
+    rows,
+    cols,
+    minValue = -1,
+    maxValue = 1,
+}) {
+    const m = createMatrix(rows, cols);
+    matrixFillRandomInPlace(m, minValue, maxValue);
+
+    return m;
+}
+
 function matrixDot(a, b) {
     console.assert(a.cols === b.rows);
 
@@ -72,6 +108,20 @@ function matrixDot(a, b) {
     return c;
 }
 
+function matrixAdd(a, b) {
+    console.assert(a.rows === b.rows, a.cols === b.cols);
+
+    const c = createMatrix(a.rows, a.cols);
+
+    for (let i = 0; i < a.rows; ++i) {
+        for (let j = 0; j < b.rows; ++j) {
+            matrixSetInPlace(c, i, j, matrixGet(a, i, j) + matrixGet(b, i, j));
+        }
+    }
+
+    return c;
+}
+
 function testMatrixModule() {
     const a = createMatrixFromRowArrays([
         [1, 2, 3],
@@ -84,10 +134,12 @@ function testMatrixModule() {
         [11, 12],
     ]);
 
-    matrixPrint(a);
-    matrixPrint(b);
-
     const c = matrixDot(a, b);
 
-    matrixPrint(c);
+    console.assert(
+        c.data[0] === 58,
+        c.data[1] === 64,
+        c.data[2] === 139,
+        c.data[3] === 154,
+    );
 }
