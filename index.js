@@ -1,18 +1,28 @@
-const GAME_MODES = {
-    SETUP: 'setup',
-    RUNNING: 'running',
-};
-
-const game = {
-    mode: GAME_MODES.SETUP,
-};
-
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+const game = createGame();
+
+const addBotButton = document.getElementById('add-bot');
+addBotButton.addEventListener('click', () => {
+    gameAddBotNextFrame(
+        game,
+        createBot({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+        }),
+    );
+});
+
+let lastFrameTime = Date.now();
+
 function loop() {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, 30, 30);
+    const now = Date.now();
+    const dt = (now - lastFrameTime) / 1000;
+    lastFrameTime = now;
+
+    gameUpdate(game, dt);
+    gameDraw(game, ctx);
 
     requestAnimationFrame(loop);
 }

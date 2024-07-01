@@ -1,45 +1,47 @@
-function createMatrix(rows, cols) {
+function createFilledMatrix(rows, cols, value) {
     return {
         rows,
         cols,
-        data: new Array(rows * cols).fill(0),
+        data: new Array(rows * cols).fill(value),
+    };
+}
+
+function createMatrix(rows, cols) {
+    return createFilledMatrix(rows, cols, 0);
+}
+
+function createMatrixFn(rows, cols, fn) {
+    const data = [];
+
+    for (let i = 0; i < rows; ++i) {
+        for (let j = 0; j < cols; ++j) {
+            data.push(fn(i, j));
+        }
+    }
+
+    return {
+        rows,
+        cols,
+        data,
     };
 }
 
 function createMatrixFromRowArrays(rowArrays) {
     const rows = rowArrays.length;
     const cols = rowArrays[0].length;
-    const data = [];
 
-    for (let i = 0; i < rowArrays.length; ++i) {
-        for (let j = 0; j < rowArrays[i].length; ++j) {
-            data.push(rowArrays[i][j]);
-        }
-    }
-
-    return {
-        rows,
-        cols,
-        data,
-    };
+    return createMatrixFn(rows, cols, (row, col) => {
+        return rowArrays[row][col];
+    });
 }
 
 function createMatrixFromColumnArrays(colArrays) {
     const cols = colArrays.length;
     const rows = colArrays[0].length;
-    const data = [];
 
-    for (let i = 0; i < rows; ++i) {
-        for (let j = 0; j < cols; ++j) {
-            data.push(colArrays[j][i]);
-        }
-    }
-
-    return {
-        rows,
-        cols,
-        data,
-    };
+    return createMatrixFn(rows, cols, (row, col) => {
+        return colArrays[col][row];
+    });
 }
 
 function matrixDataIndex(m, row, col) {
@@ -49,6 +51,8 @@ function matrixDataIndex(m, row, col) {
 }
 
 function matrixGet(m, row, col) {
+    console.assert(row >= 0, row < m.rows, col >= 0, col < m.cols);
+
     return m.data[matrixDataIndex(m, row, col)];
 }
 
@@ -108,18 +112,46 @@ function matrixDot(a, b) {
     return c;
 }
 
+function matrixScale(m, value) {
+    return createMatrixFn(m.rows, m.cols, (row, col) => {
+        return matrixGet(m, row, col) * value;
+    });
+}
+
+function matrixMulElementwise(a, b) {
+    console.assert(a.rows == b.rows, a.cols === b.cols);
+
+    return createMatrixFn(a.rows, a.cols, (row, col) => {
+        return matrixGet(a, row, col) + matrixGet(b, row, col);
+    });
+}
+
 function matrixAdd(a, b) {
     console.assert(a.rows === b.rows, a.cols === b.cols);
 
-    const c = createMatrix(a.rows, a.cols);
+    return createMatrixFn(a.rows, a.cols, (row, col) => {
+        return matrixGet(a, row, col) + matrixGet(b, row, col);
+    });
+}
 
-    for (let i = 0; i < a.rows; ++i) {
-        for (let j = 0; j < b.rows; ++j) {
-            matrixSetInPlace(c, i, j, matrixGet(a, i, j) + matrixGet(b, i, j));
-        }
-    }
+function matrixSub(a, b) {
+    console.assert(a.rows === b.rows, a.cols === b.cols);
 
-    return c;
+    return createMatrixFn(a.rows, a.cols, (row, col) => {
+        return matrixGet(a, row, col) - matrixGet(b, row, col);
+    });
+}
+
+function matrixTranspose(m) {
+    return createMatrixFn(m.cols, m.rows, (row, col) => {
+        return matrixGet(m, col, row);
+    });
+}
+
+function matrixMap(m, fn) {
+    return createMatrixFn(m.rows, m.cols, (row, col) => {
+        return fn(matrixGet(m, row, col), row, col);
+    });
 }
 
 function testMatrixModule() {
